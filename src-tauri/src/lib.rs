@@ -9,6 +9,7 @@
 pub mod commands;
 pub mod hotkey;
 pub mod inserter;
+pub mod tray;
 pub mod window_focus;
 
 use std::sync::Arc;
@@ -52,6 +53,9 @@ pub fn run() {
         .setup(|app| {
             if let Err(e) = register_default(&app.handle()) {
                 eprintln!("[jarvstranscript] falha ao registrar hotkey: {e}");
+            }
+            if let Err(e) = tray::install(&app.handle()) {
+                eprintln!("[jarvstranscript] falha ao instalar tray: {e}");
             }
             Ok(())
         })
