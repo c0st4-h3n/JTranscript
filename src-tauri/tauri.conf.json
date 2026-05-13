@@ -29,8 +29,8 @@
       {
         "label": "settings",
         "title": "JarvsTranscript — Settings",
-        "width": 480,
-        "height": 560,
+        "width": 540,
+        "height": 640,
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,

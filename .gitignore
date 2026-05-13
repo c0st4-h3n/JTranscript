@@ -42,3 +42,8 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Screenshots / prints temporarios (na raiz)
+/Print_*.png
+/Print_*.jpg
+/print_*.png

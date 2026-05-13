@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { FinalEvent, PartialEvent, ServerError } from "../lib/dictation-socket";
-import { COLOR, FONT_STACK, RADIUS, SHADOW } from "../ui/tokens";
+import { COLOR, FONT_DISPLAY, FONT_MONO, RADIUS, RULE } from "../ui/tokens";
 
 export type PasteState =
   | { kind: "idle" }
@@ -69,16 +69,15 @@ export function Pill({ state, lastPartial, serverError }: PillProps): React.Reac
         display: "flex",
         alignItems: "center",
         gap: 12,
-        color: COLOR.text,
-        fontFamily: FONT_STACK,
-        background: COLOR.surfaceGradient,
-        border: `0.5px solid ${COLOR.borderSubtle}`,
+        color: COLOR.ink,
+        fontFamily: FONT_DISPLAY,
+        // Paper surface — brand "academic journal", sem blur nem gradient quente.
+        background: COLOR.paper,
+        // Rule 1px ink — elemento gráfico principal do brand.
+        border: RULE.thin,
         borderRadius: RADIUS.capsule,
-        backdropFilter: "blur(20px) saturate(140%)",
-        WebkitBackdropFilter: "blur(20px) saturate(140%)",
-        // Drop shadow neutra (sem cor de estado vazando ao redor).
-        // O sinal de cor fica só no `Dot` (interno) — pill no plano de fundo é elegante e estável.
-        boxShadow: SHADOW.pill,
+        // Brand não usa sombra; legibilidade vem do contraste paper/ink.
+        boxShadow: "none",
         overflow: "hidden",
       }}
     >
@@ -98,10 +97,11 @@ export function Pill({ state, lastPartial, serverError }: PillProps): React.Reac
       >
         <div
           style={{
+            fontFamily: FONT_MONO,
             fontSize: 10,
-            letterSpacing: 0.4,
+            letterSpacing: "0.14em",
             textTransform: "uppercase",
-            opacity: 0.55,
+            color: COLOR.inkMute,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -111,9 +111,11 @@ export function Pill({ state, lastPartial, serverError }: PillProps): React.Reac
         </div>
         <div
           style={{
-            fontSize: state.kind === "final" ? 13 : 12.5,
-            fontWeight: state.kind === "final" ? 600 : 450,
-            opacity: state.kind === "idle" ? 0.45 : 0.96,
+            fontFamily: FONT_DISPLAY,
+            fontSize: state.kind === "final" ? 14 : 13,
+            fontWeight: state.kind === "final" ? 600 : 500,
+            color: state.kind === "idle" ? COLOR.inkFaint : COLOR.ink,
+            letterSpacing: "-0.01em",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",

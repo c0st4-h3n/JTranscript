@@ -1,5 +1,8 @@
+/* Fontes COSLU Labz — Newsreader (display) + JetBrains Mono (technical). */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html, body, #root {
@@ -10,28 +13,30 @@ html, body, #root {
   user-select: none;
   -webkit-user-select: none;
   overflow: hidden;
+  font-feature-settings: "ss01" on, "kern" on;
+  text-rendering: geometricPrecision;
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Pulse no dot quando recording — anima o brilho ao redor, sem mexer no tamanho. */
+/* Pulse no dot quando recording — anima o brilho ao redor (vermilion). */
 @keyframes jarvs-pulse {
-  0%   { box-shadow: 0 0 12px rgba(255,90,82,0.85), 0 0 0 0 rgba(255,90,82,0.55); }
-  70%  { box-shadow: 0 0 16px rgba(255,90,82,0.55), 0 0 0 8px rgba(255,90,82,0);   }
-  100% { box-shadow: 0 0 12px rgba(255,90,82,0.85), 0 0 0 0 rgba(255,90,82,0);     }
+  0%   { box-shadow: 0 0 0 0 rgba(184,49,30,0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(184,49,30,0);   }
+  100% { box-shadow: 0 0 0 0 rgba(184,49,30,0);     }
 }
 
 /* Spring entry — pill aparece com leve scale + slide + fade. */
 @keyframes jarvs-pill-enter {
   0% {
     opacity: 0;
-    transform: scale(0.92) translateY(6px);
+    transform: scale(0.94) translateY(6px);
   }
   60% {
     opacity: 1;
-    transform: scale(1.02) translateY(-1px);
+    transform: scale(1.015) translateY(-1px);
   }
   100% {
     opacity: 1;

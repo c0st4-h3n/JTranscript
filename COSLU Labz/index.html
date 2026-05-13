@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>COSLU Labz — Brand System</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="brand-tokens.css" />
+  <style>
+    html, body { margin: 0; padding: 0; background: #d9d1bf; }
+    /* canvas bg override: deeper paper tone so cream artboards float */
+    .design-canvas {
+      background-color: #d9d1bf !important;
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="brand.jsx"></script>
+  <script type="text/babel" src="site.jsx"></script>
+  <script type="text/babel" src="site-v2.jsx"></script>
+  <script type="text/babel" src="deck.jsx"></script>
+  <script type="text/babel" src="brand-book.jsx"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function App() {
+      return (
+        <DesignCanvas>
+          {/* ─────────────────────────── COVER ─────────────────────────── */}
+          <DCSection id="cover" title="00 · Identidade"
+            subtitle={<>Capa, manifesto e o <a href="brand-book.html" style={{ color: '#b8311e', fontWeight: 600 }}>brand book v.1.0</a> (referência completa pra criar com a marca).</>}>
+            <DCArtboard id="cover" label="Cover · brand book v.0.1" width={1100} height={680}>
+              <Cover />
+            </DCArtboard>
+            <DCArtboard id="brandbook" label="Brand Book · scroll completo" width={1100} height={4800}>
+              <BrandBook />
+            </DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── LOGO ─────────────────────────── */}
+          <DCSection id="logo" title="01 · Logo system"
+            subtitle="Wordmark Newsreader 800 + sufixo LABZ em JetBrains Mono. Sem símbolo separado — peso do tipo carrega a marca.">
+            <DCArtboard id="primary"      label="2.1 · Primary lockup"  width={780} height={460}><LogoPrimary /></DCArtboard>
+            <DCArtboard id="stack"        label="2.2 · Vertical stack"  width={520} height={460}><LogoStack /></DCArtboard>
+            <DCArtboard id="inverse"      label="2.3 · Inverse on ink"  width={780} height={460}><LogoInverse /></DCArtboard>
+            <DCArtboard id="mark"         label="2.4 · CL mark"          width={520} height={460}><LogoMonogram /></DCArtboard>
+            <DCArtboard id="construction" label="2.5 · Construction"     width={780} height={460}><LogoConstruction /></DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── LOGO LAB ─────────────────────────── */}
+          <DCSection id="logolab" title="01.5 · Logo lab — escolhe a vencedora"
+            subtitle="8 direções divergentes. Reage de barriga, depois a gente refina a que ganhar (ou mistura 2).">
+            <DCArtboard id="v1" label="v.01 · baseline"      width={520} height={360}><LogoVarBaseline /></DCArtboard>
+            <DCArtboard id="v2" label="v.02 · rule lockup"   width={520} height={360}><LogoVarRule /></DCArtboard>
+            <DCArtboard id="v3" label="v.03 · period"        width={520} height={360}><LogoVarPeriod /></DCArtboard>
+            <DCArtboard id="v4" label="v.04 · italic"        width={520} height={360}><LogoVarItalic /></DCArtboard>
+            <DCArtboard id="v5" label="v.05 · terminal"      width={520} height={360}><LogoVarMono /></DCArtboard>
+            <DCArtboard id="v6" label="v.06 · journal cover" width={520} height={360}><LogoVarSpaced /></DCArtboard>
+            <DCArtboard id="v7" label="v.07 · year stamp"    width={520} height={360}><LogoVarYear /></DCArtboard>
+            <DCArtboard id="v8" label="v.08 · seal"          width={520} height={360}><LogoVarSeal /></DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── SEAL & STAMP ─────────────────────────── */}
+          <DCSection id="seallab" title="01.6 · Selo & carimbo oficial"
+            subtitle="Selo institucional (s.02) pra badges/docs/footer e carimbo retangular (s.08) pra slides/PDFs.">
+            <DCArtboard id="s2" label="s.02 · inverse badge" width={560} height={560}><SealVarInverse /></DCArtboard>
+            <DCArtboard id="s8" label="s.08 · date stamp"   width={560} height={560}><SealVarDate /></DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── SUB-MARCAS ─────────────────────────── */}
+          <DCSection id="sub" title="02 · Sub-marcas"
+            subtitle="Mesma tipografia, mesmo wordmark COSLU à esquerda. Vertical em destaque + uma cor de acento por área.">
+            <DCArtboard id="games"    label="Games · vermilion"        width={520} height={420}>
+              <SubBrand name="GAMES"    accent={T.vermilion} descriptor="// play · prototype · ship" glyph="⌬ studio · runtime · level lab" dark={false}/>
+            </DCArtboard>
+            <DCArtboard id="oss"      label="OSS · cobalt"             width={520} height={420}>
+              <SubBrand name="OSS"      accent={T.cobalt}    descriptor="// fork · star · merge"      glyph="∮ libraries · sdks · cli tools" dark={false}/>
+            </DCArtboard>
+            <DCArtboard id="platform" label="Platform · ink (dark)"    width={520} height={420}>
+              <SubBrand name="PLATFORM" accent={T.vermilion} descriptor="// run · scale · observe"     glyph="◍ saas · pipelines · automation" dark={true}/>
+            </DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── SISTEMA ─────────────────────────── */}
+          <DCSection id="system" title="03 · Sistema visual"
+            subtitle="Paleta JOURNAL e par tipográfico Newsreader × JetBrains Mono. Tokens prontos pra CSS variables.">
+            <DCArtboard id="palette" label="4.1 · Palette JOURNAL"     width={1100} height={580}><PaletteSheet /></DCArtboard>
+            <DCArtboard id="type"    label="4.2 · Typography"           width={1100} height={580}><TypeSheet /></DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── APLICAÇÕES ─────────────────────────── */}
+          <DCSection id="apply" title="04 · Aplicações"
+            subtitle="Cartão, avatares e header social — pra você sair com algo na mão hoje mesmo.">
+            <DCArtboard id="card-front" label="5.1 · Card recto"       width={700} height={420}><BizCardFront /></DCArtboard>
+            <DCArtboard id="card-back"  label="5.2 · Card verso"       width={700} height={420}><BizCardBack /></DCArtboard>
+            <DCArtboard id="avatars"    label="5.3 · Avatar set"       width={900} height={420}><Avatars /></DCArtboard>
+            <DCArtboard id="banner"     label="5.4 · Social header"    width={1500} height={500}><SocialBanner /></DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── LANDING ─────────────────────────── */}
+          <DCSection id="landing" title="05 · Site — coslu.io"
+            subtitle={<>v1 (estático) e v2 (animado + interativo: typewriter, count-up, OSS filter, build-a-brief). V2 full-screen em <a href="site.html" style={{ color: '#b8311e', fontWeight: 600 }}>site.html</a>.</>}>
+            <DCArtboard id="fullsite-v2" label="v2 · animated + interactive" width={1280} height={4800}><FullSiteV2 /></DCArtboard>
+            <DCArtboard id="fullsite"    label="v1 · static"                width={1280} height={4400}><FullSite /></DCArtboard>
+            <DCArtboard id="hero"        label="v0 · hero only (legacy)"    width={1280} height={780}><LandingHero /></DCArtboard>
+          </DCSection>
+
+          {/* ─────────────────────────── DECK ─────────────────────────── */}
+          <DCSection id="deck" title="06 · Slide template — 17 layouts"
+            subtitle={<>1920×1080 @ 50% thumbnail. Versão navegavel + print-to-PDF em <a href="deck.html" style={{ color: '#b8311e', fontWeight: 600 }}>deck.html</a>.</>}>
+            {[
+              ['t1',  '01 · title',      SlideTitle],
+              ['t2',  '02 · agenda',     SlideAgenda],
+              ['t3',  '03 · section',    SlideSection],
+              ['t4',  '04 · content',    SlideContent],
+              ['t5',  '05 · data',       SlideData],
+              ['t6',  '06 · quote',      SlideQuote],
+              ['t7',  '07 · image',      SlideImage],
+              ['t8',  '08 · process',    SlideTwoCol],
+              ['t9',  '09 · compare',    SlideCompare],
+              ['t10', '10 · roadmap',    SlideRoadmap],
+              ['t11', '11 · team',       SlideTeam],
+              ['t12', '12 · pricing',    SlidePricing],
+              ['t13', '13 · logo wall',  SlideLogoWall],
+              ['t14', '14 · code demo',  SlideCodeDemo],
+              ['t15', '15 · chart',      SlideChart],
+              ['t16', '16 · references', SlideReferences],
+              ['t17', '17 · close',      SlideClose],
+            ].map(([id, label, Comp]) => (
+              <DCArtboard key={id} id={id} label={label} width={960} height={540}>
+                <div style={{ width: 1920, height: 1080, transform: 'scale(0.5)', transformOrigin: 'top left' }}>
+                  <Comp />
+                </div>
+              </DCArtboard>
+            ))}
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
