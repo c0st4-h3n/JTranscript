@@ -8,6 +8,7 @@ backend/.ruff_cache/
 backend/htmlcov/
 backend/.coverage
 backend/dist/
+backend/build/
 backend/*.egg-info/
 
 # Node / frontend
