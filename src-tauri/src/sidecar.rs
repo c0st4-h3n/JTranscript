@@ -35,11 +35,11 @@ pub fn spawn_if_present<R: Runtime>(app: &AppHandle<R>) -> Result<bool, String> 
         .map(|d| d.join("backend").join(exe_name));
 
     let Some(exe_path) = resource_path.filter(|p| p.exists()) else {
-        eprintln!("[sidecar] backend.exe nao encontrado em resource_dir/backend/ — modo dev");
+        crate::log_event!("[sidecar] backend.exe ausente em resource_dir/backend/ — modo dev");
         return Ok(false);
     };
 
-    eprintln!("[sidecar] spawnando {}", exe_path.display());
+    crate::log_event!("[sidecar] spawnando {}", exe_path.display());
 
     let mut cmd = std::process::Command::new(&exe_path);
     cmd.stdout(std::process::Stdio::inherit())
@@ -74,7 +74,7 @@ pub fn kill<R: Runtime>(app: &AppHandle<R>) {
         return;
     };
     if let Some(mut child) = guard.take() {
-        eprintln!("[sidecar] encerrando backend PID={}", child.id());
+        crate::log_event!("[sidecar] encerrando backend PID={}", child.id());
         let _ = child.kill();
         let _ = child.wait();
     }
