@@ -24,10 +24,11 @@ _ADDED_DIRS: list[Path] = []
 def ensure_cuda_runtime_dlls() -> list[Path]:
     """Adiciona dirs com DLLs CUDA ao DLL search path do Windows.
 
-    Cobre 2 cenários:
-    1. **Dev (venv)**: DLLs em `site-packages/nvidia/<pkg>/bin/`. Procura cada um.
-    2. **PyInstaller bundle**: `collect_dynamic_libs` empacota DLLs flattened
-       em `sys._MEIPASS` (mesmo dir do .exe). Adiciona o `_MEIPASS` inteiro.
+    Cobre 2 cenários, mesma estrutura `nvidia/<pkg>/bin/*.dll`:
+    1. **Dev (venv)**: root = `site-packages/`.
+    2. **PyInstaller bundle**: root = `sys._MEIPASS` (que é a pasta
+       `_internal/` ao lado do .exe). `collect_dynamic_libs` preserva
+       a estrutura `nvidia/<pkg>/bin/`.
 
     Idempotente; retorna a lista (cumulativa) de dirs adicionados.
     No-op fora do Windows.
@@ -38,21 +39,15 @@ def ensure_cuda_runtime_dlls() -> list[Path]:
     if add_dir is None:
         return list(_ADDED_DIRS)
 
-    # ---- Bundle PyInstaller (sys._MEIPASS) -------------------------------
-    # Quando rodando dentro do bundle, _MEIPASS é o root onde as DLLs
-    # nativas ficam ao lado do binário (collect_dynamic_libs flatten elas).
+    # Roots possíveis — PyInstaller `_MEIPASS` primeiro, depois site-packages.
+    roots: list[Path] = []
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass:
-        bundle_dir = Path(meipass)
-        if bundle_dir.exists() and bundle_dir not in _ADDED_DIRS:
-            cookie = add_dir(str(bundle_dir))
-            _LIVE_COOKIES.append(cookie)
-            _ADDED_DIRS.append(bundle_dir)
-            _prepend_path(str(bundle_dir))
+        roots.append(Path(meipass))
+    roots.extend(_iter_site_packages())
 
-    # ---- Dev (site-packages/nvidia/*/bin) --------------------------------
-    for site in _iter_site_packages():
-        nvidia_root = site / "nvidia"
+    for root in roots:
+        nvidia_root = root / "nvidia"
         if not nvidia_root.exists():
             continue
         for sub in ("cublas", "cudnn", "cuda_runtime", "cuda_nvrtc", "cufft"):
