@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jarvstranscript"
+version = "0.0.1"
+description = "Backend slim: STT pipeline + WebSocket IPC for JarvsTranscript widget."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Henrique Costa", email = "henrique.costa@geocarbonite.com" }]
+
+dependencies = [
+    "websockets>=13.1",
+    "structlog>=24.4.0",
+    "faster-whisper>=1.0.3",
+    "numpy>=1.26",
+    "av>=12.0",
+    # Runtime CUDA libs distribuidas como wheels NVIDIA. faster-whisper/CTranslate2
+    # localiza via os.add_dll_directory chamado em jarvstranscript.net.gpu_bootstrap.
+    "nvidia-cuda-runtime-cu12>=12.4",
+    "nvidia-cublas-cu12>=12.4",
+    "nvidia-cudnn-cu12>=9.0",
+    "silero-vad>=5.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "edge-tts>=7.0",
+]
+
+[project.scripts]
+jarvstranscript-backend = "jarvstranscript.main:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jarvstranscript"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra --strict-markers"
+pythonpath = ["src"]
+markers = [
+    "gpu: precisa de GPU CUDA disponivel (skip automatico se ausente)",
+    "slow: roda Whisper ou baixa modelos — pode levar segundos a minutos",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "PT", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]

@@ -1,0 +1,44 @@
+# Python
+backend/.venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/htmlcov/
+backend/.coverage
+backend/dist/
+backend/*.egg-info/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+coverage/
+*.local
+*.tsbuildinfo
+
+# Rust / Tauri
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/gen/
+
+# Data / runtime
+data/logs/*.jsonl
+data/config.json
+
+# Audio fixtures gerados pelos testes (edge-tts cacheia, é recriado se faltar)
+backend/tests/fixtures/*.mp3
+backend/tests/fixtures/*.wav
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+!.env.example

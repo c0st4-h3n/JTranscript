@@ -1,0 +1,45 @@
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Pulse no dot quando recording — anima o brilho ao redor, sem mexer no tamanho. */
+@keyframes jarvs-pulse {
+  0%   { box-shadow: 0 0 12px rgba(255,90,82,0.85), 0 0 0 0 rgba(255,90,82,0.55); }
+  70%  { box-shadow: 0 0 16px rgba(255,90,82,0.55), 0 0 0 8px rgba(255,90,82,0);   }
+  100% { box-shadow: 0 0 12px rgba(255,90,82,0.85), 0 0 0 0 rgba(255,90,82,0);     }
+}
+
+/* Spring entry — pill aparece com leve scale + slide + fade. */
+@keyframes jarvs-pill-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.jarvs-pill {
+  animation: jarvs-pill-enter 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  will-change: transform, opacity;
+}
