@@ -37,6 +37,10 @@ pub fn run() {
     );
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None, // sem args extras pro launch automático
+        ))
         .plugin(build_plugin())
         .manage(CapturedFocus::default())
         .manage(HotkeyState::new(mode))

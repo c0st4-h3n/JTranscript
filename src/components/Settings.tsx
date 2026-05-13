@@ -6,6 +6,11 @@
  */
 
 import { invoke } from "@tauri-apps/api/core";
+import {
+  disable as disableAutostart,
+  enable as enableAutostart,
+  isEnabled as isAutostartEnabled,
+} from "@tauri-apps/plugin-autostart";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   type ConfigAppliedEvent,
@@ -46,13 +51,45 @@ type SaveState =
   | { kind: "needs_restart"; field: string }
   | { kind: "error"; message: string };
 
+type AutostartState =
+  | { kind: "loading" }
+  | { kind: "ready"; enabled: boolean }
+  | { kind: "error"; message: string };
+
 export function Settings() {
   const [original, setOriginal] = useState<SettingsSnapshot | null>(null);
   const [draft, setDraft] = useState<SettingsSnapshot | null>(null);
   const [customModel, setCustomModel] = useState("");
   const [useCustom, setUseCustom] = useState(false);
   const [save, setSave] = useState<SaveState>({ kind: "idle" });
+  const [autostart, setAutostart] = useState<AutostartState>({ kind: "loading" });
   const socketRef = useRef<DictationSocket | null>(null);
+
+  // Carrega estado atual do autostart no boot.
+  useEffect(() => {
+    isAutostartEnabled()
+      .then((enabled) => setAutostart({ kind: "ready", enabled }))
+      .catch((e) => {
+        setAutostart({
+          kind: "error",
+          message: e instanceof Error ? e.message : String(e),
+        });
+      });
+  }, []);
+
+  const toggleAutostart = async (next: boolean) => {
+    // Otimismo na UI; reverte se falhar.
+    setAutostart({ kind: "ready", enabled: next });
+    try {
+      if (next) await enableAutostart();
+      else await disableAutostart();
+    } catch (e) {
+      setAutostart({
+        kind: "error",
+        message: e instanceof Error ? e.message : String(e),
+      });
+    }
+  };
 
   // ESC fecha a janela (sem chrome do OS, esse é o caminho de saída).
   useEffect(() => {
@@ -290,6 +327,42 @@ export function Settings() {
           }
           style={inputStyle}
         />
+      </Field>
+
+      <Field label="Iniciar com o Windows">
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 10px",
+            background: COLOR.inputBg,
+            border: `0.5px solid ${COLOR.borderSubtle}`,
+            borderRadius: RADIUS.control,
+            cursor: autostart.kind === "ready" ? "pointer" : "default",
+            fontSize: 12,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={autostart.kind === "ready" ? autostart.enabled : false}
+            disabled={autostart.kind !== "ready"}
+            onChange={(e) => toggleAutostart(e.target.checked)}
+            style={{ accentColor: COLOR.accent.primary, cursor: "inherit" }}
+          />
+          <span style={{ flex: 1, color: COLOR.text }}>
+            {autostart.kind === "loading" && "verificando..."}
+            {autostart.kind === "ready" &&
+              (autostart.enabled
+                ? "ativado — inicia automaticamente no login"
+                : "desativado — só roda quando voce abrir")}
+            {autostart.kind === "error" && (
+              <span style={{ color: COLOR.accent.error }}>
+                erro: {autostart.message}
+              </span>
+            )}
+          </span>
+        </label>
       </Field>
 
       <footer
