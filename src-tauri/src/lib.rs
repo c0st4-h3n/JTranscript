@@ -67,6 +67,7 @@ pub fn run() {
             commands::open_settings,
             commands::close_settings,
             commands::set_hotkey_mode,
+            commands::log_event,
         ])
         .setup(move |app| {
             // Logger: aponta pro AppData local. Idempotente.

@@ -3,7 +3,8 @@
 //! o backend é levantado pelo `dev.ps1` separado — esse módulo só atua
 //! quando detecta o sidecar no `resource dir`.
 //!
-//! Spawn no setup do Tauri, monitor de saída em background, kill no shutdown.
+//! Spawn no setup do Tauri, redireciona stdout/stderr pra arquivo de log
+//! em `%LOCALAPPDATA%\io.jarvinho.transcript\backend.log`, kill no shutdown.
 
 use std::sync::Mutex;
 
@@ -19,6 +20,13 @@ pub struct BackendHandle(pub Mutex<Option<std::process::Child>>);
 /// Tenta achar e spawnar o sidecar `jarvstranscript-backend.exe`.
 /// Retorna `Ok(false)` se não encontrou (modo dev) — sem erro.
 pub fn spawn_if_present<R: Runtime>(app: &AppHandle<R>) -> Result<bool, String> {
+    // Em modo debug (cargo tauri dev), o dev.ps1 já sobe o backend Python
+    // separadamente. Sidecar.exe tentaria bind 7979 e falharia — skip.
+    if cfg!(debug_assertions) {
+        crate::log_event!("[sidecar] debug profile — pulando spawn (use dev.ps1 pro backend)");
+        return Ok(false);
+    }
+
     let exe_name = if cfg!(windows) {
         "jarvstranscript-backend.exe"
     } else {
@@ -26,8 +34,6 @@ pub fn spawn_if_present<R: Runtime>(app: &AppHandle<R>) -> Result<bool, String> 
     };
 
     // Procura em `resource_dir/backend/` (onde MSI extrai o bundle do backend).
-    // tauri.conf.json mapeia `../backend/dist/jarvstranscript-backend` → `backend/`.
-    // Em dev sem MSI, o resource_dir é `src-tauri/` — não tem essa pasta.
     let resource_path = app
         .path()
         .resource_dir()
@@ -39,11 +45,40 @@ pub fn spawn_if_present<R: Runtime>(app: &AppHandle<R>) -> Result<bool, String> 
         return Ok(false);
     };
 
+    // Diretório de logs/config — `%LOCALAPPDATA%\io.jarvinho.transcript\`
+    let app_data_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| format!("falha ao resolver app_local_data_dir: {e}"))?;
+    let _ = std::fs::create_dir_all(&app_data_dir);
+
+    // Redireciona stdout/stderr do backend pra arquivos. Shell é GUI sem
+    // console, então sem isso os logs vão pro void.
+    let stdout_path = app_data_dir.join("backend.log");
+    let stderr_path = app_data_dir.join("backend.err");
+    let config_path = app_data_dir.join("config.json");
+
+    let stdout_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&stdout_path)
+        .map_err(|e| format!("falha ao abrir {}: {e}", stdout_path.display()))?;
+    let stderr_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&stderr_path)
+        .map_err(|e| format!("falha ao abrir {}: {e}", stderr_path.display()))?;
+
     crate::log_event!("[sidecar] spawnando {}", exe_path.display());
+    crate::log_event!("[sidecar] stdout -> {}", stdout_path.display());
+    crate::log_event!("[sidecar] config -> {}", config_path.display());
 
     let mut cmd = std::process::Command::new(&exe_path);
-    cmd.stdout(std::process::Stdio::inherit())
-        .stderr(std::process::Stdio::inherit());
+    cmd.stdout(stdout_file)
+        .stderr(stderr_file)
+        // Aponta o backend pro mesmo config.json que a UI Settings usa.
+        // Sem isso, o backend cai pra default (cwd/data/config.json — vazio no install).
+        .env("JARVSTRANSCRIPT_CONFIG_PATH", &config_path);
 
     // Em Windows, evita herdar handles que possam segurar o processo no shutdown.
     #[cfg(windows)]

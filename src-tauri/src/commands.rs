@@ -109,6 +109,14 @@ pub fn set_hotkey_mode(
     Ok(parsed.as_str().to_string())
 }
 
+/// Permite que o frontend (React) escreva no `shell.log` — debug em release.
+/// Sem DevTools acessíveis (mesmo com feature habilitada), essa é a forma
+/// de o JS vazar mensagens pra log file inspecionável.
+#[tauri::command]
+pub fn log_event(msg: String) {
+    crate::log_event!("[ui] {msg}");
+}
+
 /// Função pura: dado o tamanho da tela e da janela, devolve (x, y) pro canto
 /// inferior direito com margem.
 pub fn compute_bottom_right(

@@ -29,6 +29,11 @@ const BACKEND_URL = "ws://127.0.0.1:7979";
 const HIDE_AFTER_PASTE_MS = 1400;
 const HIDE_AFTER_ERROR_MS = 3500;
 
+/** Debug log que vai pro shell.log via invoke Tauri. No-op em browser puro. */
+function trace(msg: string): void {
+  invoke("log_event", { msg }).catch(() => {});
+}
+
 export function App() {
   const [sockState, setSockState] = useState<DictationState>({ kind: "idle" });
   const [recState, setRecState] = useState<RecorderState>({ kind: "idle" });
@@ -49,7 +54,11 @@ export function App() {
     const socket = new DictationSocket(BACKEND_URL, browserWebSocketTransport);
     socketRef.current = socket;
 
-    const unsubState = socket.subscribe(setSockState);
+    trace("App boot — criando DictationSocket");
+    const unsubState = socket.subscribe((s) => {
+      setSockState(s);
+      trace(`sock state: ${s.kind}${s.kind === "connected" ? ` model=${s.model} gpu=${s.gpu}` : ""}${s.kind === "error" ? ` msg=${s.message}` : ""}`);
+    });
     const unsubPartial = socket.onPartial((p) => setLastPartial(p));
     const unsubFinal = socket.onFinal(async (f) => {
       setFinal(f);
@@ -103,19 +112,36 @@ export function App() {
     const unsubConfig = socket.onConfig((s) => applyMode(s.mode));
     const unsubConfigApplied = socket.onConfigApplied((e) => applyMode(e.settings.mode));
 
-    socket
-      .connect()
-      .then(() => {
-        // pede snapshot pra sincronizar mode logo após conexão
+    // Retry connect com backoff — backend.exe pode levar 2-5s pra Whisper
+    // subir após o shell. Sem retry, sock fica "error" e qualquer F8 falha.
+    let cancelled = false;
+    const connectWithRetry = async (): Promise<void> => {
+      let delay = 500;
+      const maxDelay = 4000;
+      const giveUpAfterMs = 60_000;
+      const startedAt = Date.now();
+      while (!cancelled) {
         try {
-          socket.sendGetConfig();
-        } catch {
-          // socket pode ter caído entre connect resolve e sendGetConfig
+          await socket.connect();
+          trace("WS connect OK");
+          try {
+            socket.sendGetConfig();
+          } catch {
+            // race entre connect resolve e sendGetConfig — ok
+          }
+          return;
+        } catch (e) {
+          if (Date.now() - startedAt > giveUpAfterMs) {
+            trace(`WS connect desistiu apos ${giveUpAfterMs}ms: ${e instanceof Error ? e.message : String(e)}`);
+            return;
+          }
+          trace(`WS connect falhou, retry em ${delay}ms: ${e instanceof Error ? e.message : String(e)}`);
+          await new Promise((r) => setTimeout(r, delay));
+          delay = Math.min(maxDelay, Math.round(delay * 1.5));
         }
-      })
-      .catch(() => {
-        // erro ja propaga via state
-      });
+      }
+    };
+    void connectWithRetry();
 
     const recorder = new MicRecorder(createWebAudioCaptureTransport);
     recorderRef.current = recorder;
@@ -130,6 +156,7 @@ export function App() {
     });
 
     return () => {
+      cancelled = true;
       unsubState();
       unsubPartial();
       unsubFinal();
@@ -149,32 +176,43 @@ export function App() {
     setFinal(null);
     setServerErr(null);
     setPaste({ kind: "idle" });
+    trace(`handleStart — mode=${currentModeRef.current} sock=${socketRef.current ? "alive" : "null"}`);
     try {
       socketRef.current?.sendSessionStart({
         mode: currentModeRef.current,
         polish: true,
         lang: "pt",
       });
-    } catch {
-      // socket nao conectado ainda
+      trace("sendSessionStart OK");
+    } catch (e) {
+      trace(`sendSessionStart FAILED: ${e instanceof Error ? e.message : String(e)}`);
     }
-    await recorderRef.current?.start();
+    try {
+      await recorderRef.current?.start();
+      trace("recorder.start OK");
+    } catch (e) {
+      trace(`recorder.start FAILED: ${e instanceof Error ? e.message : String(e)}`);
+    }
   };
 
   const handleStop = async () => {
+    trace("handleStop");
     await recorderRef.current?.stop();
     try {
       socketRef.current?.sendSessionEnd();
-    } catch {
-      // socket fechou
+      trace("sendSessionEnd OK");
+    } catch (e) {
+      trace(`sendSessionEnd FAILED: ${e instanceof Error ? e.message : String(e)}`);
     }
   };
 
   useHotkeyEvents({
     onStart: () => {
+      trace("hotkey:start recebido");
       void handleStart();
     },
     onStop: () => {
+      trace("hotkey:stop recebido");
       void handleStop();
     },
   });

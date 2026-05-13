@@ -22,7 +22,12 @@ _ADDED_DIRS: list[Path] = []
 
 
 def ensure_cuda_runtime_dlls() -> list[Path]:
-    """Adiciona `site-packages/nvidia/*/bin` ao DLL search path do Windows.
+    """Adiciona dirs com DLLs CUDA ao DLL search path do Windows.
+
+    Cobre 2 cenários:
+    1. **Dev (venv)**: DLLs em `site-packages/nvidia/<pkg>/bin/`. Procura cada um.
+    2. **PyInstaller bundle**: `collect_dynamic_libs` empacota DLLs flattened
+       em `sys._MEIPASS` (mesmo dir do .exe). Adiciona o `_MEIPASS` inteiro.
 
     Idempotente; retorna a lista (cumulativa) de dirs adicionados.
     No-op fora do Windows.
@@ -33,6 +38,19 @@ def ensure_cuda_runtime_dlls() -> list[Path]:
     if add_dir is None:
         return list(_ADDED_DIRS)
 
+    # ---- Bundle PyInstaller (sys._MEIPASS) -------------------------------
+    # Quando rodando dentro do bundle, _MEIPASS é o root onde as DLLs
+    # nativas ficam ao lado do binário (collect_dynamic_libs flatten elas).
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        bundle_dir = Path(meipass)
+        if bundle_dir.exists() and bundle_dir not in _ADDED_DIRS:
+            cookie = add_dir(str(bundle_dir))
+            _LIVE_COOKIES.append(cookie)
+            _ADDED_DIRS.append(bundle_dir)
+            _prepend_path(str(bundle_dir))
+
+    # ---- Dev (site-packages/nvidia/*/bin) --------------------------------
     for site in _iter_site_packages():
         nvidia_root = site / "nvidia"
         if not nvidia_root.exists():
